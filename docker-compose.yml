@@ -1,0 +1,8 @@
+services:
+  s3-uploader-mcp:
+    image: ghcr.io/dtinth/s3-uploader-mcp:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVER_SECRET=${SERVER_SECRET}
+      - ISSUER=${ISSUER}
