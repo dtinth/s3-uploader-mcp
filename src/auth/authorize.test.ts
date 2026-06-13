@@ -16,6 +16,21 @@ function makeApp() {
   return app;
 }
 
+Deno.test('GET /authorize includes bulk config modal with template', async () => {
+  const app = makeApp();
+  const res = await app.request('/authorize');
+  const text = await res.text();
+
+  assertEquals(text.includes('Paste config'), true);
+  assertEquals(text.includes('S3_ENDPOINT'), true);
+  assertEquals(text.includes('S3_REGION'), true);
+  assertEquals(text.includes('S3_BUCKET'), true);
+  assertEquals(text.includes('S3_ACCESS_KEY_ID'), true);
+  assertEquals(text.includes('S3_SECRET_ACCESS_KEY'), true);
+  assertEquals(text.includes('S3_PUBLIC_URL_BASE'), true);
+  assertEquals(text.includes('S3_KEY_PREFIX'), true);
+});
+
 Deno.test('GET /authorize returns HTML form with OAuth params preserved', async () => {
   const app = makeApp();
   const res = await app.request(
