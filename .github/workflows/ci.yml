@@ -24,3 +24,39 @@ jobs:
         run: deno fmt --check
       - name: Run tests
         run: deno test -A
+
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t s3-uploader-mcp .
+      - name: Start container
+        run: |
+          docker run -d \
+            --name s3-uploader-mcp \
+            -p 8000:8000 \
+            -e SERVER_SECRET=test-server-secret-for-acceptance-testing \
+            -e ISSUER=http://localhost:8000 \
+            s3-uploader-mcp
+      - name: Wait for server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:8000/.well-known/oauth-authorization-server > /dev/null 2>&1; then
+              echo "Server is ready"
+              exit 0
+            fi
+            echo "Waiting for server... ($i)"
+            sleep 1
+          done
+          echo "Server failed to start"
+          docker logs s3-uploader-mcp
+          exit 1
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Run acceptance tests
+        run: deno test -A tests/blackbox_test.ts
+      - name: Clean up
+        if: always()
+        run: docker rm -f s3-uploader-mcp
