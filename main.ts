@@ -8,10 +8,13 @@ if (!SERVER_SECRET) {
 }
 
 const ISSUER = Deno.env.get('ISSUER') || 'http://localhost:8000';
+const MCP_URL = Deno.env.get('MCP_URL') || `${ISSUER}/mcp`;
 
 const { encryptionKey, hmacSecret } = await deriveKey(SERVER_SECRET);
 
-const app = createApp(encryptionKey, hmacSecret, ISSUER);
+const app = createApp(encryptionKey, hmacSecret, ISSUER, MCP_URL);
 
-console.log(`S3 Uploader MCP server starting on :8000 (issuer: ${ISSUER})`);
+console.log(
+  `S3 Uploader MCP server starting on :8000 (issuer: ${ISSUER}, mcp: ${MCP_URL})`,
+);
 Deno.serve({ port: 8000 }, app.fetch);

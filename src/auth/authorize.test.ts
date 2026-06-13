@@ -5,8 +5,14 @@ import { Hono } from 'hono';
 function makeApp() {
   const app = new Hono();
   const encKey = new Uint8Array(32);
-  app.get('/authorize', createAuthorizeHandler(encKey));
-  app.post('/authorize', createAuthorizeHandler(encKey));
+  app.get(
+    '/authorize',
+    createAuthorizeHandler(encKey, 'http://localhost:8000'),
+  );
+  app.post(
+    '/authorize',
+    createAuthorizeHandler(encKey, 'http://localhost:8000'),
+  );
   return app;
 }
 

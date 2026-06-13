@@ -17,15 +17,23 @@ function jsonRpcResult(id: number | string | null, result: unknown) {
   return { jsonrpc: '2.0', id, result };
 }
 
-export function createMcpHandler(encryptionKey: Uint8Array) {
+function wwwAuthHeader(mcpUrl: string, scope?: string): Record<string, string> {
+  const metadataUrl = `${
+    new URL(mcpUrl).origin
+  }/.well-known/oauth-protected-resource`;
+  let value = `Bearer resource_metadata="${metadataUrl}"`;
+  if (scope) value += `, scope="${scope}"`;
+  return { 'WWW-Authenticate': value };
+}
+
+export function createMcpHandler(
+  encryptionKey: Uint8Array,
+  mcpUrl: string,
+) {
   return async (c: Context) => {
     const auth = c.req.header('authorization') || '';
     if (!auth.startsWith('Bearer ')) {
-      return c.json(
-        { error: 'unauthorized' },
-        401,
-        { 'WWW-Authenticate': 'Bearer' },
-      );
+      return c.json({ error: 'unauthorized' }, 401, wwwAuthHeader(mcpUrl));
     }
 
     const token = auth.slice(7);
@@ -33,19 +41,11 @@ export function createMcpHandler(encryptionKey: Uint8Array) {
     try {
       payload = await decrypt(token, encryptionKey);
     } catch {
-      return c.json(
-        { error: 'invalid_token' },
-        401,
-        { 'WWW-Authenticate': 'Bearer' },
-      );
+      return c.json({ error: 'invalid_token' }, 401, wwwAuthHeader(mcpUrl));
     }
 
     if (payload.typ !== 'access_token') {
-      return c.json(
-        { error: 'invalid_token' },
-        401,
-        { 'WWW-Authenticate': 'Bearer' },
-      );
+      return c.json({ error: 'invalid_token' }, 401, wwwAuthHeader(mcpUrl));
     }
 
     let reqBody: {

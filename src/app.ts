@@ -1,6 +1,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { createDiscoveryHandler } from './auth/discovery.ts';
+import {
+  createDiscoveryHandler,
+  createProtectedResourceHandler,
+} from './auth/discovery.ts';
 import { createRegistrationHandler } from './auth/register.ts';
 import { createAuthorizeHandler } from './auth/authorize.ts';
 import { createTokenHandler } from './auth/token.ts';
@@ -10,6 +13,7 @@ export function createApp(
   encryptionKey: Uint8Array,
   hmacSecret: Uint8Array,
   issuer: string,
+  mcpUrl: string,
 ) {
   const app = new Hono();
 
@@ -20,11 +24,16 @@ export function createApp(
     createDiscoveryHandler(issuer),
   );
 
+  app.get(
+    '/.well-known/oauth-protected-resource',
+    createProtectedResourceHandler(mcpUrl),
+  );
+
   app.post('/register', createRegistrationHandler(hmacSecret));
-  app.get('/authorize', createAuthorizeHandler(encryptionKey));
-  app.post('/authorize', createAuthorizeHandler(encryptionKey));
+  app.get('/authorize', createAuthorizeHandler(encryptionKey, issuer));
+  app.post('/authorize', createAuthorizeHandler(encryptionKey, issuer));
   app.post('/token', createTokenHandler(encryptionKey, hmacSecret));
-  app.post('/mcp', createMcpHandler(encryptionKey));
+  app.post('/mcp', createMcpHandler(encryptionKey, mcpUrl));
 
   return app;
 }

@@ -89,7 +89,10 @@ const OAUTH_PARAM_KEYS = [
   'scope',
 ];
 
-export function createAuthorizeHandler(encryptionKey: Uint8Array) {
+export function createAuthorizeHandler(
+  encryptionKey: Uint8Array,
+  issuer: string,
+) {
   return async (c: Context) => {
     if (c.req.method === 'GET') {
       const query = c.req.query();
@@ -157,9 +160,9 @@ export function createAuthorizeHandler(encryptionKey: Uint8Array) {
       encryptionKey,
     );
 
-    const location = `${redirectUri}?code=${encodeURIComponent(code)}${
-      state ? `&state=${encodeURIComponent(state)}` : ''
-    }`;
+    const location = `${redirectUri}?code=${encodeURIComponent(code)}&iss=${
+      encodeURIComponent(issuer)
+    }${state ? `&state=${encodeURIComponent(state)}` : ''}`;
     return c.redirect(location, 302);
   };
 }

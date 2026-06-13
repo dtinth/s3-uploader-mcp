@@ -27,7 +27,7 @@ async function createToken(key: Uint8Array) {
 Deno.test('POST /mcp initialize returns capabilities', async () => {
   const encKey = makeKey();
   const app = new Hono();
-  app.post('/mcp', createMcpHandler(encKey));
+  app.post('/mcp', createMcpHandler(encKey, 'http://localhost:8000/mcp'));
 
   const token = await createToken(encKey);
   const res = await app.request('/mcp', {
@@ -59,7 +59,7 @@ Deno.test('POST /mcp initialize returns capabilities', async () => {
 Deno.test('POST /mcp tools/list returns tools', async () => {
   const encKey = makeKey();
   const app = new Hono();
-  app.post('/mcp', createMcpHandler(encKey));
+  app.post('/mcp', createMcpHandler(encKey, 'http://localhost:8000/mcp'));
 
   const token = await createToken(encKey);
   const res = await app.request('/mcp', {
@@ -87,7 +87,7 @@ Deno.test('POST /mcp tools/list returns tools', async () => {
 Deno.test('POST /mcp tools/call get_upload_url returns presigned URL', async () => {
   const encKey = makeKey();
   const app = new Hono();
-  app.post('/mcp', createMcpHandler(encKey));
+  app.post('/mcp', createMcpHandler(encKey, 'http://localhost:8000/mcp'));
 
   const token = await createToken(encKey);
   const res = await app.request('/mcp', {
@@ -122,7 +122,7 @@ Deno.test('POST /mcp tools/call get_upload_url returns presigned URL', async () 
 Deno.test('POST /mcp rejects request without auth', async () => {
   const encKey = makeKey();
   const app = new Hono();
-  app.post('/mcp', createMcpHandler(encKey));
+  app.post('/mcp', createMcpHandler(encKey, 'http://localhost:8000/mcp'));
 
   const res = await app.request('/mcp', {
     method: 'POST',
@@ -141,7 +141,7 @@ Deno.test('POST /mcp rejects request without auth', async () => {
 Deno.test('POST /mcp rejects expired token', async () => {
   const encKey = makeKey();
   const app = new Hono();
-  app.post('/mcp', createMcpHandler(encKey));
+  app.post('/mcp', createMcpHandler(encKey, 'http://localhost:8000/mcp'));
 
   const expiredToken = await encrypt(
     {
@@ -177,7 +177,7 @@ Deno.test('POST /mcp rejects expired token', async () => {
 Deno.test('POST /mcp rejects non-access_token type', async () => {
   const encKey = makeKey();
   const app = new Hono();
-  app.post('/mcp', createMcpHandler(encKey));
+  app.post('/mcp', createMcpHandler(encKey, 'http://localhost:8000/mcp'));
 
   const refreshToken = await encrypt(
     {

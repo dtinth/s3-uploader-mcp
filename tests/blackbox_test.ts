@@ -17,6 +17,16 @@ Deno.test('blackbox: discovery metadata', async () => {
     'refresh_token',
   ]);
   assertEquals(body.code_challenge_methods_supported, ['S256']);
+  assertEquals(body.authorization_response_iss_parameter_supported, true);
+});
+
+Deno.test('blackbox: protected resource metadata', async () => {
+  const res = await fetch(`${BASE}/.well-known/oauth-protected-resource`);
+  assertEquals(res.status, 200);
+  const body = await res.json();
+  assertEquals(body.resource, `${ISSUER}/mcp`);
+  assertEquals(body.authorization_servers, [ISSUER]);
+  assertEquals(body.scopes_supported, ['upload']);
 });
 
 Deno.test('blackbox: DCR register', async () => {
@@ -89,7 +99,9 @@ Deno.test('blackbox: full OAuth flow + MCP tool call', async () => {
   const code = new URL(location).searchParams.get('code') || '';
   await authRes.body?.cancel();
   const state = new URL(location).searchParams.get('state');
+  const iss = new URL(location).searchParams.get('iss');
   assertEquals(state, 'test-state');
+  assertEquals(iss, ISSUER);
   assertNotEquals(code, '');
 
   // 3. Exchange code for tokens

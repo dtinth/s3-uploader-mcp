@@ -12,6 +12,17 @@ export function createDiscoveryHandler(issuer: string) {
       code_challenge_methods_supported: ['S256'],
       scopes_supported: ['upload', 'offline_access'],
       token_endpoint_auth_methods_supported: ['none'],
+      authorization_response_iss_parameter_supported: true,
+    });
+  };
+}
+
+export function createProtectedResourceHandler(mcpUrl: string) {
+  return (c: Context) => {
+    return c.json({
+      resource: mcpUrl,
+      authorization_servers: [new URL(mcpUrl).origin],
+      scopes_supported: ['upload'],
     });
   };
 }
