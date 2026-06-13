@@ -1,5 +1,5 @@
-import { assertEquals, assertRejects } from '@std/assert';
-import { createTokenHandler, computePkceChallenge } from './token.ts';
+import { assertEquals } from '@std/assert';
+import { computePkceChallenge, createTokenHandler } from './token.ts';
 import { encrypt } from '../crypto/jwe.ts';
 import { Hono } from 'hono';
 

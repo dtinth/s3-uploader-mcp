@@ -43,7 +43,10 @@ Deno.test('POST /authorize with valid config redirects with code', async () => {
 
   assertEquals(res.status, 302);
   const location = res.headers.get('location') || '';
-  assertEquals(location.startsWith('https://claude.ai/api/mcp/auth_callback?code='), true);
+  assertEquals(
+    location.startsWith('https://claude.ai/api/mcp/auth_callback?code='),
+    true,
+  );
   assertEquals(location.includes('&state=xyz'), true);
 });
 
@@ -64,7 +67,10 @@ Deno.test('POST /authorize without redirect_uri defaults to claude callback', as
 
   assertEquals(res.status, 302);
   const location = res.headers.get('location') || '';
-  assertEquals(location.startsWith('https://claude.ai/api/mcp/auth_callback?code='), true);
+  assertEquals(
+    location.startsWith('https://claude.ai/api/mcp/auth_callback?code='),
+    true,
+  );
 });
 
 Deno.test('POST /authorize with missing required fields returns form with error', async () => {

@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from '@std/assert';
-import { encrypt, decrypt, type TokenPayload } from './jwe.ts';
+import { decrypt, encrypt, type TokenPayload } from './jwe.ts';
 
 Deno.test('encrypt and decrypt roundtrip', async () => {
   const key = crypto.getRandomValues(new Uint8Array(32));

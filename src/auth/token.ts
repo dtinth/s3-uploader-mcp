@@ -15,7 +15,11 @@ export async function computePkceChallenge(
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function createTokenPayload(base: TokenPayload, typ: 'access_token' | 'refresh_token', ttlSeconds: number | null): TokenPayload {
+function createTokenPayload(
+  base: TokenPayload,
+  typ: 'access_token' | 'refresh_token',
+  ttlSeconds: number | null,
+): TokenPayload {
   const now = Math.floor(Date.now() / 1000);
   return {
     endpoint: base.endpoint,
@@ -72,7 +76,11 @@ export function createTokenHandler(
       const clientId = body.get('client_id');
       const clientSecret = body.get('client_secret');
       if (clientId && clientSecret) {
-        const valid = await verifyClientSecret(hmacSecret, clientId, clientSecret);
+        const valid = await verifyClientSecret(
+          hmacSecret,
+          clientId,
+          clientSecret,
+        );
         if (!valid) {
           return c.json({ error: 'invalid_client' }, 400);
         }

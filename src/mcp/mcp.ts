@@ -5,7 +5,11 @@ import { createPresignedPutUrl } from '../s3/s3.ts';
 
 const MCP_VERSION = '2024-11-05';
 
-function jsonRpcError(id: number | string | null, code: number, message: string) {
+function jsonRpcError(
+  id: number | string | null,
+  code: number,
+  message: string,
+) {
   return { jsonrpc: '2.0', id, error: { code, message } };
 }
 
@@ -44,7 +48,12 @@ export function createMcpHandler(encryptionKey: Uint8Array) {
       );
     }
 
-    let reqBody: { jsonrpc?: string; id?: number | string | null; method?: string; params?: Record<string, unknown> };
+    let reqBody: {
+      jsonrpc?: string;
+      id?: number | string | null;
+      method?: string;
+      params?: Record<string, unknown>;
+    };
     try {
       reqBody = await c.req.json();
     } catch {
@@ -52,7 +61,10 @@ export function createMcpHandler(encryptionKey: Uint8Array) {
     }
 
     if (reqBody.jsonrpc !== '2.0') {
-      return c.json(jsonRpcError(reqBody.id ?? null, -32600, 'Invalid Request'), 400);
+      return c.json(
+        jsonRpcError(reqBody.id ?? null, -32600, 'Invalid Request'),
+        400,
+      );
     }
 
     const method = reqBody.method || '';
@@ -83,7 +95,8 @@ export function createMcpHandler(encryptionKey: Uint8Array) {
                 properties: {
                   filename: {
                     type: 'string',
-                    description: 'The filename (path) to upload to the storage bucket',
+                    description:
+                      'The filename (path) to upload to the storage bucket',
                   },
                 },
                 required: ['filename'],
@@ -100,12 +113,22 @@ export function createMcpHandler(encryptionKey: Uint8Array) {
       const args = (params.arguments || {}) as Record<string, string>;
 
       if (toolName !== 'get_upload_url') {
-        return c.json(jsonRpcError(reqBody.id ?? null, -32602, `Unknown tool: ${toolName}`), 400);
+        return c.json(
+          jsonRpcError(reqBody.id ?? null, -32602, `Unknown tool: ${toolName}`),
+          400,
+        );
       }
 
       const filename = args.filename;
       if (!filename || typeof filename !== 'string') {
-        return c.json(jsonRpcError(reqBody.id ?? null, -32602, 'Missing required argument: filename'), 400);
+        return c.json(
+          jsonRpcError(
+            reqBody.id ?? null,
+            -32602,
+            'Missing required argument: filename',
+          ),
+          400,
+        );
       }
 
       try {
@@ -137,6 +160,9 @@ export function createMcpHandler(encryptionKey: Uint8Array) {
       return c.json(jsonRpcResult(reqBody.id ?? null, {}));
     }
 
-    return c.json(jsonRpcError(reqBody.id ?? null, -32601, `Method not found: ${method}`), 400);
+    return c.json(
+      jsonRpcError(reqBody.id ?? null, -32601, `Method not found: ${method}`),
+      400,
+    );
   };
 }

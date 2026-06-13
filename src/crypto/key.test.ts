@@ -27,7 +27,10 @@ Deno.test('different secrets produce different keys', async () => {
   const bKey = new Uint8Array(b.encryptionKey);
   let same = true;
   for (let i = 0; i < aKey.length; i++) {
-    if (aKey[i] !== bKey[i]) { same = false; break; }
+    if (aKey[i] !== bKey[i]) {
+      same = false;
+      break;
+    }
   }
   assertEquals(same, false);
 });

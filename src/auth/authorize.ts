@@ -46,19 +46,33 @@ function renderForm(
   <form method="POST">
       ${hiddenFields}
     <label for="endpoint">Endpoint</label>
-    <input type="text" id="endpoint" name="endpoint" placeholder="https://s3.us-east-1.amazonaws.com" value="${values?.endpoint || ''}" required>
+    <input type="text" id="endpoint" name="endpoint" placeholder="https://s3.us-east-1.amazonaws.com" value="${
+    values?.endpoint || ''
+  }" required>
     <label for="region">Region</label>
-    <input type="text" id="region" name="region" placeholder="us-east-1" value="${values?.region || ''}" required>
+    <input type="text" id="region" name="region" placeholder="us-east-1" value="${
+    values?.region || ''
+  }" required>
     <label for="bucket">Bucket</label>
-    <input type="text" id="bucket" name="bucket" placeholder="my-bucket" value="${values?.bucket || ''}" required>
+    <input type="text" id="bucket" name="bucket" placeholder="my-bucket" value="${
+    values?.bucket || ''
+  }" required>
     <label for="accessKeyId">Access Key ID</label>
-    <input type="text" id="accessKeyId" name="accessKeyId" placeholder="AKIA..." value="${values?.accessKeyId || ''}" required>
+    <input type="text" id="accessKeyId" name="accessKeyId" placeholder="AKIA..." value="${
+    values?.accessKeyId || ''
+  }" required>
     <label for="secretAccessKey">Secret Access Key</label>
-    <input type="password" id="secretAccessKey" name="secretAccessKey" placeholder="●●●●●●●●" value="${values?.secretAccessKey || ''}" required>
+    <input type="password" id="secretAccessKey" name="secretAccessKey" placeholder="●●●●●●●●" value="${
+    values?.secretAccessKey || ''
+  }" required>
     <label for="publicUrlBase">Public URL Base</label>
-    <input type="text" id="publicUrlBase" name="publicUrlBase" placeholder="https://my-bucket.public.url/" value="${values?.publicUrlBase || ''}" required>
+    <input type="text" id="publicUrlBase" name="publicUrlBase" placeholder="https://my-bucket.public.url/" value="${
+    values?.publicUrlBase || ''
+  }" required>
     <label for="keyPrefix">Key Prefix <span class="optional">(optional)</span></label>
-    <input type="text" id="keyPrefix" name="keyPrefix" placeholder="uploads/" value="${values?.keyPrefix || ''}">
+    <input type="text" id="keyPrefix" name="keyPrefix" placeholder="uploads/" value="${
+    values?.keyPrefix || ''
+  }">
     <button type="submit">Authorize</button>
   </form>
 </body>
@@ -66,8 +80,13 @@ function renderForm(
 }
 
 const OAUTH_PARAM_KEYS = [
-  'response_type', 'client_id', 'redirect_uri',
-  'code_challenge', 'code_challenge_method', 'state', 'scope',
+  'response_type',
+  'client_id',
+  'redirect_uri',
+  'code_challenge',
+  'code_challenge_method',
+  'state',
+  'scope',
 ];
 
 export function createAuthorizeHandler(encryptionKey: Uint8Array) {
@@ -100,7 +119,9 @@ export function createAuthorizeHandler(encryptionKey: Uint8Array) {
         if (formData.keyPrefix && typeof formData.keyPrefix === 'string') {
           values.keyPrefix = formData.keyPrefix;
         }
-        return c.html(renderForm(oauthParams, `Missing required field: ${field}`, values));
+        return c.html(
+          renderForm(oauthParams, `Missing required field: ${field}`, values),
+        );
       }
       values[field] = val.trim();
     }
@@ -110,12 +131,13 @@ export function createAuthorizeHandler(encryptionKey: Uint8Array) {
     }
 
     const redirectUri =
-      (typeof formData.redirect_uri === 'string' && formData.redirect_uri.trim()
+      typeof formData.redirect_uri === 'string' && formData.redirect_uri.trim()
         ? formData.redirect_uri.trim()
-        : DEFAULT_REDIRECT);
+        : DEFAULT_REDIRECT;
     const state = typeof formData.state === 'string' ? formData.state : '';
-    const codeChallenge =
-      typeof formData.code_challenge === 'string' ? formData.code_challenge : '';
+    const codeChallenge = typeof formData.code_challenge === 'string'
+      ? formData.code_challenge
+      : '';
 
     const now = Math.floor(Date.now() / 1000);
     const code = await encrypt(
@@ -135,7 +157,9 @@ export function createAuthorizeHandler(encryptionKey: Uint8Array) {
       encryptionKey,
     );
 
-    const location = `${redirectUri}?code=${encodeURIComponent(code)}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+    const location = `${redirectUri}?code=${encodeURIComponent(code)}${
+      state ? `&state=${encodeURIComponent(state)}` : ''
+    }`;
     return c.redirect(location, 302);
   };
 }
