@@ -1,7 +1,7 @@
 import { assertEquals, assertRejects } from '@std/assert';
 import { createPresignedPutUrl } from './s3.ts';
 
-Deno.test('createPresignedPutUrl returns presigned URL and public URL', async () => {
+Deno.test('createPresignedPutUrl returns presigned URL, public URL, and usage', async () => {
   const result = await createPresignedPutUrl(
     {
       endpoint: 'https://s3.us-east-1.amazonaws.com',
@@ -18,13 +18,18 @@ Deno.test('createPresignedPutUrl returns presigned URL and public URL', async ()
   assertEquals(typeof result.url, 'string');
   assertEquals(result.url.startsWith('http'), true);
   assertEquals(result.url.includes('X-Amz-Signature'), true);
-  assertEquals(result.url.includes('hello.txt'), true);
 
   assertEquals(typeof result.publicUrl, 'string');
-  assertEquals(result.publicUrl.includes('uploads/hello.txt'), true);
+  assertEquals(result.publicUrl.includes('uploads/'), true);
+  assertEquals(result.publicUrl.endsWith('-hello.txt'), true);
+
+  assertEquals(typeof result.usage, 'string');
+  assertEquals(result.usage.includes('curl'), true);
+  assertEquals(result.usage.includes('<file>'), true);
+  assertEquals(result.usage.includes('<url>'), true);
 });
 
-Deno.test('createPresignedPutUrl includes keyPrefix when configured', async () => {
+Deno.test('createPresignedPutUrl includes date/uuid prefix in key path', async () => {
   const result = await createPresignedPutUrl(
     {
       endpoint: 'https://s3.us-east-1.amazonaws.com',
@@ -38,8 +43,15 @@ Deno.test('createPresignedPutUrl includes keyPrefix when configured', async () =
     'images/photo.png',
   );
 
-  assertEquals(result.url.includes('uploads/images/photo.png'), true);
-  assertEquals(result.publicUrl.includes('uploads/images/photo.png'), true);
+  const now = new Date();
+  const yyyy = String(now.getFullYear());
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const datePath = `${yyyy}/${mm}/${dd}`;
+
+  assertEquals(result.publicUrl.includes(`uploads/${datePath}/`), true);
+  assertEquals(result.publicUrl.endsWith('-images/photo.png'), true);
+  assertEquals(result.url.includes(`uploads/${datePath}/`), true);
 });
 
 Deno.test('createPresignedPutUrl works without keyPrefix', async () => {
@@ -55,8 +67,7 @@ Deno.test('createPresignedPutUrl works without keyPrefix', async () => {
     'test.txt',
   );
 
-  assertEquals(result.url.includes('/test.txt'), true);
-  assertEquals(result.publicUrl.endsWith('/test.txt'), true);
+  assertEquals(result.publicUrl.endsWith('-test.txt'), true);
 });
 
 Deno.test('createPresignedPutUrl throws on empty filename', async () => {

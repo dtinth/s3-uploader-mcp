@@ -1,4 +1,5 @@
 import { AwsClient } from 'aws4fetch';
+import { v7 } from '@std/uuid';
 
 export interface StorageConfig {
   endpoint: string;
@@ -10,17 +11,34 @@ export interface StorageConfig {
   keyPrefix?: string;
 }
 
+export interface PresignedPutUrlResult {
+  url: string;
+  publicUrl: string;
+  usage: string;
+}
+
+function buildKey(prefix: string | undefined, filename: string): string {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const id = v7.generate();
+  const base = prefix ? `${prefix.replace(/\/$/, '')}` : '';
+  return `${base}${base ? '/' : ''}${yyyy}/${mm}/${dd}/${id}-${filename}`;
+}
+
+const USAGE_TEXT =
+  "Example upload command: `curl -s -o /dev/null -w '%{http_code}' -X PUT -T '<file>' '<url>'`";
+
 export async function createPresignedPutUrl(
   config: StorageConfig,
   filename: string,
-): Promise<{ url: string; publicUrl: string }> {
+): Promise<PresignedPutUrlResult> {
   if (!filename) {
     throw new Error('Filename is required');
   }
 
-  const key = config.keyPrefix
-    ? `${config.keyPrefix.replace(/\/$/, '')}/${filename}`
-    : filename;
+  const key = buildKey(config.keyPrefix, filename);
 
   const client = new AwsClient({
     accessKeyId: config.accessKeyId,
@@ -39,5 +57,5 @@ export async function createPresignedPutUrl(
 
   const publicUrl = `${config.publicUrlBase.replace(/\/$/, '')}/${key}`;
 
-  return { url: signed.url, publicUrl };
+  return { url: signed.url, publicUrl, usage: USAGE_TEXT };
 }

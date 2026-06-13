@@ -116,7 +116,11 @@ Deno.test('POST /mcp tools/call get_upload_url returns presigned URL', async () 
   assertEquals(typeof parsed.url, 'string');
   assertEquals(typeof parsed.publicUrl, 'string');
   assertEquals(parsed.url.includes('X-Amz-Signature'), true);
-  assertEquals(parsed.publicUrl.endsWith('/test.png'), true);
+  assertEquals(parsed.publicUrl.endsWith('-test.png'), true);
+  assertEquals(typeof parsed.usage, 'string');
+  assertEquals(parsed.usage.includes('curl'), true);
+  assertEquals(parsed.usage.includes('<file>'), true);
+  assertEquals(parsed.usage.includes('<url>'), true);
 });
 
 Deno.test('POST /mcp rejects request without auth', async () => {

@@ -164,7 +164,10 @@ Deno.test('blackbox: full OAuth flow + MCP tool call', async () => {
   const parsed = JSON.parse(callBody.result.content[0].text);
   assertEquals(typeof parsed.url, 'string');
   assertEquals(parsed.url.includes('X-Amz-Signature'), true);
-  assertEquals(parsed.publicUrl.endsWith('/acceptance-test.png'), true);
+  assertEquals(parsed.publicUrl.endsWith('-acceptance-test.png'), true);
+  assertEquals(typeof parsed.usage, 'string');
+  assertEquals(parsed.usage.includes('curl'), true);
+  assertEquals(parsed.usage.includes('<file>'), true);
 
   // 6. Refresh token
   const refreshBody = new URLSearchParams({
