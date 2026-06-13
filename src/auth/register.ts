@@ -1,6 +1,6 @@
 import { Context } from 'hono';
 
-export function createRegistrationHandler(hmacSecret: ArrayBuffer) {
+export function createRegistrationHandler(hmacSecret: Uint8Array) {
   return async (c: Context) => {
     const contentType = c.req.header('content-type') || '';
     if (!contentType.includes('application/json')) {
@@ -38,12 +38,12 @@ export function createRegistrationHandler(hmacSecret: ArrayBuffer) {
 }
 
 export async function computeClientSecret(
-  hmacSecret: ArrayBuffer,
+  hmacSecret: Uint8Array,
   clientId: string,
 ): Promise<string> {
   const key = await crypto.subtle.importKey(
     'raw',
-    hmacSecret,
+    hmacSecret.slice().buffer as ArrayBuffer,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign'],
@@ -61,7 +61,7 @@ export async function computeClientSecret(
 }
 
 export async function verifyClientSecret(
-  hmacSecret: ArrayBuffer,
+  hmacSecret: Uint8Array,
   clientId: string,
   clientSecret: string,
 ): Promise<boolean> {
