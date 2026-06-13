@@ -1,0 +1,9 @@
+.git/
+.gitignore
+.gitattributes
+*.md
+docs/
+tests/
+.github/
+.mise.toml
+Dockerfile
