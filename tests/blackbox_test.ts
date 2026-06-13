@@ -1,4 +1,4 @@
-import { assertEquals, assertNotEquals, assertRejects } from '@std/assert';
+import { assertEquals, assertNotEquals } from '@std/assert';
 
 const BASE = Deno.env.get('MCP_SERVER_URL') || 'http://localhost:8000';
 const ISSUER = Deno.env.get('ISSUER') || BASE;
@@ -12,7 +12,10 @@ Deno.test('blackbox: discovery metadata', async () => {
   assertEquals(body.token_endpoint, `${ISSUER}/token`);
   assertEquals(body.registration_endpoint, `${ISSUER}/register`);
   assertEquals(body.response_types_supported, ['code']);
-  assertEquals(body.grant_types_supported, ['authorization_code', 'refresh_token']);
+  assertEquals(body.grant_types_supported, [
+    'authorization_code',
+    'refresh_token',
+  ]);
   assertEquals(body.code_challenge_methods_supported, ['S256']);
 });
 
@@ -47,7 +50,10 @@ Deno.test('blackbox: full OAuth flow + MCP tool call', async () => {
   // 1. Generate PKCE challenge
   const codeVerifier = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
   const encoder = new TextEncoder();
-  const hash = await crypto.subtle.digest('SHA-256', encoder.encode(codeVerifier));
+  const hash = await crypto.subtle.digest(
+    'SHA-256',
+    encoder.encode(codeVerifier),
+  );
   const challenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
@@ -57,8 +63,14 @@ Deno.test('blackbox: full OAuth flow + MCP tool call', async () => {
   formData.append('region', 'us-east-1');
   formData.append('bucket', 'test-bucket');
   formData.append('accessKeyId', 'AKIAIOSFODNN7EXAMPLE');
-  formData.append('secretAccessKey', 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY');
-  formData.append('publicUrlBase', 'https://test-bucket.s3.us-east-1.amazonaws.com');
+  formData.append(
+    'secretAccessKey',
+    'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+  );
+  formData.append(
+    'publicUrlBase',
+    'https://test-bucket.s3.us-east-1.amazonaws.com',
+  );
   formData.append('redirect_uri', 'https://claude.ai/api/mcp/auth_callback');
   formData.append('state', 'test-state');
   formData.append('code_challenge', challenge);
@@ -70,7 +82,10 @@ Deno.test('blackbox: full OAuth flow + MCP tool call', async () => {
   });
   assertEquals(authRes.status, 302);
   const location = authRes.headers.get('location') || '';
-  assertEquals(location.startsWith('https://claude.ai/api/mcp/auth_callback?code='), true);
+  assertEquals(
+    location.startsWith('https://claude.ai/api/mcp/auth_callback?code='),
+    true,
+  );
   const code = new URL(location).searchParams.get('code') || '';
   await authRes.body?.cancel();
   const state = new URL(location).searchParams.get('state');
